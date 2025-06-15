@@ -111,8 +111,6 @@ jobs:
 
         # Copy new manifests
         cp generated.yaml "$DEPLOY_DIR/whatsnew-service-${VERSION_TAG}.yaml"
-        cp whatsnew-service-vars.yaml "$DEPLOY_DIR/"
-        cp whatsnew-service-secrets.yaml "$DEPLOY_DIR/"
 
         cd dasmlab-live-cicd
         git add .
