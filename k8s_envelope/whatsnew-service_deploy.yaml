@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: whatsnew-service
+  namespace: whatsnew-service-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: whatsnew-service
+  template:
+    metadata:
+      labels:
+        app: whatsnew-service
+    spec:
+      containers:
+        - name: whatsnew-service
+          image: ghcr.io/lmcdasm/whatsnew-service:__VERSION__
+          imagePullPolicy: Always
+          ports:
+            - name: api
+              containerPort: 10020
+              protocol: TCP
+            - name: metrics
+              containerPort: 9200
+              protocol: TCP
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: whatsnew-service
+  namespace: whatsnew-service-system
+  annotations:
+    metallb.universe.tf/ip-allocated-from-pool: bgp-pool
+    prometheus.io/scrape: "true" # ADDED FOR USE WITH GRAFANA ALLOY
+    prometheus.io/port: "9200" # ADDED FOR USE WITH GRAFANA ALLOY
+    prometheus.io/path: "/metrics" # ADDED FOR USE WITH GRAFANA ALLOY
+spec:
+  selector:
+    app: whatsnew-service
+  type: LoadBalancer
+  loadBalancerIP: 192.168.19.160
+  externalTrafficPolicy: Cluster
+  ports:
+    - name: api
+      port: 10020       # External LB port
+      targetPort: api  # Matches named container port (80)
+      protocol: TCP
+    - name: metrics
+      port: 9200
+      targetPort: metrics
+      protocol: TCP

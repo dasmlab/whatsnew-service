@@ -1,0 +1,86 @@
+name: WhatsNew Service CX Pipeline (Isolated Builds with Docker Networks)
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  cx-pipeline:
+    runs-on: self-hosted
+    steps:
+
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Setup Build Metadata
+      id: vars
+      run: |
+        echo "COMMIT_ID=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+        echo "VERSION_TAG=v$(date +'%Y.%m.%d')-$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+        echo "NETWORK_NAME=whatsnew-net-${GITHUB_SHA::8}" >> $GITHUB_ENV
+        echo "IMAGE_TAG=whatsnew_image:${GITHUB_SHA::8}" >> $GITHUB_ENV
+        echo "CONTAINER_NAME=whatsnew_instance-${GITHUB_SHA::8}" >> $GITHUB_ENV
+        echo "API_PORT=10020" >> $GITHUB_ENV
+        echo "METRICS_PORT=9200" >> $GITHUB_ENV
+
+    - name: Build Phase
+      run: |
+        docker build -t $IMAGE_TAG .
+
+    - name: Create Isolated Docker Network
+      run: |
+        docker network create $NETWORK_NAME || true
+
+    - name: Run Phase (App Container)
+      run: |
+        docker rm -f $CONTAINER_NAME 2>/dev/null || true
+        docker run -d --name $CONTAINER_NAME --network $NETWORK_NAME $IMAGE_TAG
+        sleep 5
+        docker exec $CONTAINER_NAME curl -f http://localhost:$API_PORT || (echo "API failed health check" && exit 1)
+        docker exec $CONTAINER_NAME curl -f http://localhost:$METRICS_PORT || (echo "METRICS failed health check" && exit 1)
+
+    - name: Secure Phase (Stub)
+      run: |
+        echo "Run SAST/DAST tools here using $CONTAINER_NAME on $NETWORK_NAME"
+        # docker run --rm --network $NETWORK_NAME dasmlab-security-suite:latest
+        exit 0
+
+    - name: Test Phase (Stub)
+      run: |
+        echo "Run Selenium/Playwright/etc against $CONTAINER_NAME on $NETWORK_NAME"
+        # docker run --rm --network $NETWORK_NAME dasmlab-test-suite:latest
+        exit 0
+
+    - name: Publish Phase
+      run: |
+        docker tag $IMAGE_TAG ghcr.io/lmcdasm/whatsnew-service:${VERSION_TAG}
+        echo "${{ secrets.DASMLAB_GHCR_PAT }}" | docker login ghcr.io -u lmcdasm --password-stdin
+        docker push ghcr.io/lmcdasm/whatsnew-service:${VERSION_TAG}
+
+    - name: GitOps Sync (Deploy) Phase
+      run: |
+        sed "s|__VERSION__|${VERSION_TAG}|g" k8s_envelope/whatsnew-service_deploy.yaml > generated.yaml
+
+        git config --global user.name "dasmlab-bot"
+        git config --global user.email "ci@dasmlab.org"
+
+        git clone https://x-access-token:${{ secrets.DASMLAB_GHCR_PAT }}@github.com/lmcdasm/dasmlab-live-cicd.git
+
+        DEPLOY_DIR="dasmlab-live-cicd/clusters/dasmlab-prod-1/whatsnew_service/live"
+        ARCHIVE_DIR="dasmlab-live-cicd/clusters/dasmlab-prod-1/whatsnew_service/archived"
+        mkdir -p "$ARCHIVE_DIR"
+
+        find "$DEPLOY_DIR" -maxdepth 1 -type f -name 'whatsnew-service-v*.yaml' -exec mv {} "$ARCHIVE_DIR"/ \;
+        cp generated.yaml "$DEPLOY_DIR/whatsnew-service-${VERSION_TAG}.yaml"
+
+        cd dasmlab-live-cicd
+        git add .
+        git commit -m "Auto-publish whatsnew-service ${VERSION_TAG}"
+        git push
+
+    - name: Teardown (Clean Containers & Network)
+      if: always()
+      run: |
+        docker rm -f $CONTAINER_NAME || true
+        docker network rm $NETWORK_NAME || true
+

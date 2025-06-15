@@ -57,12 +57,6 @@ func main() {
 	}
 
 
-	// Read in the list of repos to monitor
-	repoList, err := api.ReadTargetRepos("repos/target_repos.txt")
-	if err != nil {
-		log.Fatalf("Failed to read repos: %v", err)
-	}
-
 	// Start up the CommitCache Backgrounder
 	go func() {
 		for {
@@ -72,12 +66,25 @@ func main() {
 				time.Sleep(1 * time.Minute)
 				continue
 			}
-			log.Info("Refreshing cache...")
+
+
+			start := time.Now()
+			log.Info("Refreshing Repos commits cache...")
+			// our tokens are scoped to all projects in the org, so we interrogate all of them
+			repoList, err := api.ListAccessibleRepos(token)
+			if err != nil {
+				log.Fatalf("Failed to get repositories from installation: %v", err)
+			}
+
 			api.SetGitHubAccessToken(token)
-			api.RefreshCommitCache(repoList)
+			api.RefreshCommitCacheDynamic(repoList)
+
+			log.Infof("Refresh Cycle Completed in %s", time.Since(start).Truncate(time.Millisecond))
 			time.Sleep(1 * time.Minute)
+
 		}
 	}()
+
 
 
 	// Primary App Router

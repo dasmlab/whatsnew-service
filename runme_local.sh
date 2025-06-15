@@ -6,12 +6,21 @@
 
 # This runs very privileged (host network mode, privileged, etc) and its not meant for production. Use the K8s Envelope for more 'production' ready packaging and runtime goodness
 
-app=mcp-go-server-manager
+app=whatsnew-service
 version=latest
 
-docker stop mcp-go-server-manager
-docker rm  mcp-go-server-manager
-docker run -d --name mcp-go-server-manager \
+### SET THESE TO YOU ENV
+APP_ID=1408585
+INSTALLATION_ID=71368278
+PEMFILE=/app/whatsnew-github.pem
+
+docker stop ${app}-instance
+docker rm  ${app}-instance
+docker run -d -p 10020:10020 -p 9200:9200 --name whatsnew-service-instance \
+	--env APP_ID=${APP_ID} \
+	--env INSTALLATION_ID=${INSTALLATION_ID} \
+	--env PEMFILE=${PEMFILE} \
+	-v $(pwd)/whatsnew-github.pem:/app/whatsnew-github.pem \
         --privileged \
         --restart=always \
         --network=host \

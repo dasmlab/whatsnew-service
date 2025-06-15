@@ -91,6 +91,3 @@ func (gh *GitHubAppAuth) GetAccessToken() (string, error) {
 	return response.Token, nil
 }
 
-func SetGitHubAccessToken(tok string) {
-	githubAccessToken = tok
-}
