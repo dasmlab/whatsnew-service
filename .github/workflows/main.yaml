@@ -36,8 +36,8 @@ jobs:
         APP_ID: ${{ vars.APP_ID }}
         INSTALLATION_ID: ${{ vars.INSTALLATION_ID }}
         PEM_CONTENTS: $${{ secrets.PEM_CONTENTS }}
-        API_PORT: "10888"
-        METRICS_PORT: "9288"
+        API_PORT: "10020"
+        METRICS_PORT: "9200"
       run: |
         echo "Removing Any previous possibilities.."
         docker rm -f $CONTAINER_NAME 2>/dev/null || true
