@@ -14,6 +14,9 @@ graph TD
   E -->|Prometheus scrape| G[Grafana Alloy]
 ```
 
+-- 
+[![WhatsNew Service CX Pipeline (Isolated Builds within Discrete Networks)](https://github.com/dasmlab/whatsnew-service/actions/workflows/main.yaml/badge.svg)](https://github.com/dasmlab/whatsnew-service/actions/workflows/main.yaml)
+
 ---
 
 ## 🚀 Features
