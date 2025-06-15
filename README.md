@@ -14,7 +14,6 @@ graph TD
   D --> G[[Service API - http://host:port/get]]
   E -->|Prometheus scrape| H[Grafana Alloy]
 ```
-
 --- 
 
 ## Pipeline Status
