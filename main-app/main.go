@@ -44,16 +44,30 @@ func main() {
 	// Check ENV Vars and GITHUB Auth setup
 	appID := os.Getenv("APP_ID")
 	instID := os.Getenv("INSTALLATION_ID")
-	pemFile := os.Getenv("PEMFILE")
 
-	if appID == "" || instID == "" || pemFile == "" {
-		log.Fatal("Missing required environment variables: APP_ID, INSTALLATION_ID, or PEMFILE")
+	// Adding so that we never expose the PEM contents (org secret)
+	// in the container on filesystem, its read into ephermal file format, parsed and destroyed
+	pemData := os.Getenv("PEM_CONTENTS")
+
+
+	var pem []byte
+	//var err error
+
+	if pemData != "" {
+    		pem = []byte(pemData)
+	} else {
+   	 	log.Fatal("Missing required environment variable: PEM_CONTENTS ")
+	}
+
+
+	if appID == "" || instID == ""  {
+		log.Fatal("Missing required environment variables: APP_ID, INSTALLATION_ID, or PEM_CONTENTS")
 	}
 
 	ghAuth := &api.GitHubAppAuth{
 		AppID:          appID,
 		InstallationID: instID,
-		PrivateKeyPath: pemFile,
+		PrivateKeyPEM: pem,
 	}
 
 

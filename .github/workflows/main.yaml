@@ -32,12 +32,30 @@ jobs:
         docker network create $NETWORK_NAME || true
 
     - name: Run Phase (App Container)
+      env:
+        APP_ID: ${{ vars.APP_ID }}
+        INSTALLATION_ID: ${{ vars.INSTALLATION_ID }}
+        PEM_CONTENTS: $${{ secrets.PEM_CONTENTS }}
+        API_PORT: "10888"
+        METRICS_PORT: "9288"
       run: |
+        echo "Removing Any previous possibilities.."
         docker rm -f $CONTAINER_NAME 2>/dev/null || true
-        docker run -d -p 10020:10020 -p 9200:9200 --name $CONTAINER_NAME --network $NETWORK_NAME $IMAGE_TAG
+        echo "Setting up PEM Keys.."
+        echo "${{ secrets.PEMFILE }}" > ./whatsnew-github.pem
+        echo "Starting up App... (docker run)"
+        docker run -d -p $API_PORT:10020 -p $METRIC_PORT:9200 \
+          --name $CONTAINER_NAME \
+          --network $NETWORK_NAME \
+          --env APP_ID=$APP_ID \
+          --env INSTALLATION_ID=$INSTALLATION_ID \
+          --env PEM_CONTENTS="$PEM_CONTENTS" \
+          $IMAGE_TAG
+
+        echo "Sleeping to let things start for 5 seconds... "
         sleep 5
-        docker exec $CONTAINER_NAME curl -f http://localhost:${API_PORT}/get || (echo "API failed health check on port ${API_PORT}" && exit 1)
-        docker exec $CONTAINER_NAME curl -f http://localhost:${METRICS_PORT}/metrics || (echo "METRICS failed health check" && exit 1)
+        docker exec $CONTAINER_NAME curl -f http://localhost:$API_PORT/get || (echo "API failed health check on port ${API_PORT}" && exit 1)
+        docker exec $CONTAINER_NAME curl -f http://localhost:$METRICS_PORT/metrics || (echo "METRICS failed health check" && exit 1)
 
     - name: Secure Phase (Stub)
       run: |

@@ -19,12 +19,22 @@ import (
 type GitHubAppAuth struct {
 	AppID          string
 	InstallationID string
-	PrivateKeyPath string
+	PrivateKeyPath string // (Secure) for backwards compatibility 
+	PrivateKeyPEM  []byte // (More Secure) take form secrets.XX or var, rather than need to write a file
 	tokenCache     string
 	tokenExpires   time.Time
 }
 
 func (gh *GitHubAppAuth) loadPrivateKey() (*rsa.PrivateKey, error) {
+    block, _ := pem.Decode(gh.PrivateKeyPEM)
+    if block == nil || block.Type != "RSA PRIVATE KEY" {
+        return nil, errors.New("failed to decode PEM block")
+    }
+    return x509.ParsePKCS1PrivateKey(block.Bytes)
+}
+
+// DEPRECATED - DONT USE FILE ANYMORE
+func (gh *GitHubAppAuth) legacyLoadPrivateKey() (*rsa.PrivateKey, error) {
 	data, err := os.ReadFile(gh.PrivateKeyPath)
 	if err != nil {
 		return nil, err

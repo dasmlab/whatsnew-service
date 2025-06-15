@@ -6,23 +6,28 @@
 
 # This runs very privileged (host network mode, privileged, etc) and its not meant for production. Use the K8s Envelope for more 'production' ready packaging and runtime goodness
 
+
 app=whatsnew-service
 version=latest
 
-### SET THESE TO YOU ENV
-APP_ID=1408585
-INSTALLATION_ID=71368278
-PEMFILE=/app/whatsnew-github.pem
-
 docker stop ${app}-instance
 docker rm  ${app}-instance
-docker run -d -p 10020:10020 -p 9200:9200 --name whatsnew-service-instance \
-	--env APP_ID=${APP_ID} \
-	--env INSTALLATION_ID=${INSTALLATION_ID} \
-	--env PEMFILE=${PEMFILE} \
-	-v $(pwd)/whatsnew-github.pem:/app/whatsnew-github.pem \
-        --restart=always \
-        ${app}:${version}
 
-##       --network=host \
-##      --privileged \
+APP_ID=1408585
+INSTALLATION_ID=71368278
+PEM_CONTENTS="$(cat whatsnew-github.pem)"
+
+
+if [[ -z "$app" || -z "$version" ]]; then
+  echo "ERROR: app or version variable is not set!"
+  exit 1
+fi
+
+echo "Running: docker run ... $app:$version"
+docker run -d -p 10020:10020 -p 9200:9200 --name ${app}-instance \
+  --env APP_ID=${APP_ID} \
+  --env INSTALLATION_ID=${INSTALLATION_ID} \
+  --env PEM_CONTENTS="${PEM_CONTENTS}" \
+  --restart=always \
+  ${app}:${version}
+
