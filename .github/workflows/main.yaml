@@ -36,8 +36,8 @@ jobs:
         docker rm -f $CONTAINER_NAME 2>/dev/null || true
         docker run -d --name $CONTAINER_NAME --network $NETWORK_NAME $IMAGE_TAG
         sleep 5
-        docker exec $CONTAINER_NAME curl -f http://localhost:$API_PORT || (echo "API failed health check" && exit 1)
-        docker exec $CONTAINER_NAME curl -f http://localhost:$METRICS_PORT || (echo "METRICS failed health check" && exit 1)
+        docker exec $CONTAINER_NAME curl -f http://localhost:$API_PORT/get || (echo "API failed health check" && exit 1)
+        docker exec $CONTAINER_NAME curl -f http://localhost:$METRICS_PORT/metrics || (echo "METRICS failed health check" && exit 1)
 
     - name: Secure Phase (Stub)
       run: |

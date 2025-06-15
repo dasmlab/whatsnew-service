@@ -21,8 +21,8 @@ docker run -d -p 10020:10020 -p 9200:9200 --name whatsnew-service-instance \
 	--env INSTALLATION_ID=${INSTALLATION_ID} \
 	--env PEMFILE=${PEMFILE} \
 	-v $(pwd)/whatsnew-github.pem:/app/whatsnew-github.pem \
-        --privileged \
         --restart=always \
-        --network=host \
         ${app}:${version}
 
+##       --network=host \
+##      --privileged \
