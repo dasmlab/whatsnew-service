@@ -13,6 +13,7 @@ main-app/whatsnew-github.pem
 main-app/whatsnew-svc-secret.txt
 whatsnew-github.pem
 whatsnew-svc-secret.txt
+main-app/whatsnew-service
 
 # Test binary, built with `go test -c`
 *.test

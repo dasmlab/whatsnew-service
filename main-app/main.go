@@ -4,7 +4,6 @@ import (
 	// STD
 	"os"
 	"time"
-	"strings"
 
 	// 3PPs
 	"github.com/gin-gonic/gin"
@@ -42,29 +41,17 @@ func main() {
 	gin.SetMode(gin.ReleaseMode)
 
 
-	// Check ENV Vars
-	svcSecret := "whatsnew-svc-secret.txt"
-	pemFile := "whatsnew-github.pem"
+	// Check ENV Vars and GITHUB Auth setup
+	appID := os.Getenv("APP_ID")
+	instID := os.Getenv("INSTALLATION_ID")
+	pemFile := os.Getenv("PEMFILE")
 
-
-	// Github OAUTH SETUP
-	var appID, instID string
-	data, err := os.ReadFile(svcSecret)
-	if err != nil {
-		log.Fatalf("Failed to read: %s: %v", svcSecret, err)
-	}
-
-	for _, line := range strings.Split(string(data), "\n") {
-		if strings.HasPrefix(line, "APP_ID=") {
-			appID = strings.TrimPrefix(line, "APP_ID=")
-		}
-		if strings.HasPrefix(line, "INSTALLATION_ID=") {
-			instID = strings.TrimPrefix(line, "INSTALLATION_ID=")
-		}
+	if appID == "" || instID == "" || pemFile == "" {
+		log.Fatal("Missing required environment variables: APP_ID, INSTALLATION_ID, or PEMFILE")
 	}
 
 	ghAuth := &api.GitHubAppAuth{
-		AppID: appID,
+		AppID:          appID,
 		InstallationID: instID,
 		PrivateKeyPath: pemFile,
 	}
