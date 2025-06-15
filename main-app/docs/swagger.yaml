@@ -1,0 +1,37 @@
+basePath: /
+definitions:
+  api.CommitEntry:
+    properties:
+      date:
+        type: string
+      id:
+        type: integer
+      project:
+        type: string
+      title:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: APIs for MCP Server Instantiation, Configuration and Handling
+  title: MCP Explorer - MCP Server APIs
+  version: 0.0.1
+paths:
+  /get:
+    get:
+      description: Returns cached GitHub commit info across configured repos
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              items:
+                $ref: '#/definitions/api.CommitEntry'
+              type: array
+            type: object
+      summary: Get latest commits from cache
+      tags:
+      - whatsnew
+swagger: "2.0"

@@ -1,0 +1,57 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "APIs for MCP Server Instantiation, Configuration and Handling",
+        "title": "MCP Explorer - MCP Server APIs",
+        "contact": {},
+        "version": "0.0.1"
+    },
+    "basePath": "/",
+    "paths": {
+        "/get": {
+            "get": {
+                "description": "Returns cached GitHub commit info across configured repos",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "whatsnew"
+                ],
+                "summary": "Get latest commits from cache",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/api.CommitEntry"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "api.CommitEntry": {
+            "type": "object",
+            "properties": {
+                "date": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "project": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}
