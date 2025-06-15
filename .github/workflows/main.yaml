@@ -92,8 +92,8 @@ jobs:
 
         git clone https://x-access-token:${{ secrets.DASMLAB_GHCR_PAT }}@github.com/lmcdasm/dasmlab-live-cicd.git
 
-        DEPLOY_DIR="dasmlab-live-cicd/clusters/dasmlab-prod-1/whatsnew_service/live"
-        ARCHIVE_DIR="dasmlab-live-cicd/clusters/dasmlab-prod-1/whatsnew_service/archived"
+        DEPLOY_DIR="dasmlab-live-cicd/clusters/dasmlab-prod-1/whatsnew-service/live"
+        ARCHIVE_DIR="dasmlab-live-cicd/clusters/dasmlab-prod-1/whatsnew-service/archived"
         mkdir -p "$ARCHIVE_DIR"
 
         find "$DEPLOY_DIR" -maxdepth 1 -type f -name 'whatsnew-service-v*.yaml' -exec mv {} "$ARCHIVE_DIR"/ \;
