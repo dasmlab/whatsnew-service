@@ -4,11 +4,22 @@ metadata:
   name: whatsnew-service-vars
   namespace: whatsnew-service-system
 data:
-  APP_ID: "1408585"
-  INSTALLATION_ID: "654321"
+  APP_ID: "__APP_ID__"
+  INSTALLATION_ID: "__INSTALLATION_ID__"
 
 ---
 
+apiVersion: v1
+kind: Secret
+metadata:
+  name: whatsnew-service-secrets
+  namespace: whatsnew-service-system
+type: Opaque
+stringData:
+  PEM_CONTENTS: |-
+ __PEM_CONTENTS__
+
+---
 
 apiVersion: apps/v1
 kind: Deployment

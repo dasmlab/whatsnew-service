@@ -85,32 +85,17 @@ jobs:
 
     - name: GitOps Sync (Deploy) Phase
       run: |
-        # Substitute variables in deployment template
-        sed "s|__VERSION__|${VERSION_TAG}|g" k8s_envelope/whatsnew-service_deploy.yaml > generated.yaml
+        # Prepare PEM (escape newlines for sed, preserve formatting)
+        PEM_CONTENTS="$(echo "${{ secrets.PEM_CONTENTS }}" | sed 's/^/        /')"
 
-        # Generate ConfigMap manifest
-        cat <<EOF > whatsnew-service-vars.yaml
-        apiVersion: v1
-        kind: ConfigMap
-        metadata:
-          name: whatsnew-service-vars
-          namespace: whatsnew-service-system
-        data:
-          APP_ID: "${{ vars.APP_ID }}"
-          INSTALLATION_ID: "${{ vars.INSTALLATION_ID }}"
-        EOF
-
-        # Generate Secret manifest
-        cat <<EOF > whatsnew-service-secrets.yaml
-        apiVersion: v1
-        kind: Secret
-        metadata:
-          name: whatsnew-service-secrets
-          namespace: whatsnew-service-system
-        type: Opaque
-        stringData:
-          PEM_CONTENTS: |
-            $(echo "${{ secrets.PEM_CONTENTS }}" | sed 's/^/        /')
+        # Substitute all vars (note: PEM_CONTENTS must be handled as block literal)
+        sed \
+          -e "s|__VERSION__|${VERSION_TAG}|g" \
+          -e "s|__APP_ID__|${{ vars.APP_ID }}|g" \
+          -e "s|__INSTALLATION_ID__|${{ vars.INSTALLATION_ID }}|g" \
+          -e "/__PEM_CONTENTS__/ { r /dev/stdin" -e "d }" \
+          k8s_envelope/whatsnew-service_deploy.yaml <<<"$PEM_CONTENTS" \
+          > generated.yaml
         EOF
 
         # Clone & update repo as usual...
