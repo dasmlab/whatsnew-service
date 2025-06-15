@@ -20,18 +20,31 @@ graph TD
 ## 🎉 CX Pipeline Status
 
 ```mermaid
-graph LR
-  Trigger([🟢 Git Push to main]) --> Build[📦 Build Phase]
-  Build -->|📤 Container Built| Run[🚀 Run Phase]
-  Run -->|🧪 Service Container| Test[🧪 Test Phase]
-  Run -->|🛡️ Service Container| Secure[🔐 Secure Phase]
-  Build -->|📦 Image :ghcr.io| Publish[📤 Publish Phase]
-  Publish -->|📝 Deployment Manifest| GitOps[🔄 GitOps Sync Phase]
-  Secure -->|📄 Security Reports| Audit[🔒 Security Review Repo]
-  Test -->|📄 Test Results| QA[✅ QA Reports Repo]
-```
+flowchart LR
+  subgraph Inputs
+    A1[⬇️ Git Commit Push]
+    A2[⬇️ SAST Sec Suite\nhttps://github.com/dasmlab/sec_suite]
+    A3[⬇️ Test FW Suite\ndasmlab/test_suite]
+  end
+  A1 --> B1[🛠️ BUILD]
+  B1 --> B2[▶️ RUN]
+  B2 --> B3[🔒 SECURE]
+  B3 --> B4[✅ VALIDATE]
+  B4 --> B5[📤 PUBLISH]
+  B5 --> B6[🔄 GitOps Sync]
 
-> _Isolated Docker Networks, Secure Builds, and FluxCD GitOps Integration_
+  %% Inputs
+  A2 --> B3
+  A3 --> B4
+
+  %% Downward outputs
+  B2 --> |Isolated Instance| C1[🏗️ Running App]
+  B3 --> |Security Reports| C2[📝 CVE/Scan/Compliance]
+  B4 --> |Test Reports| C3[🧪 Test FW Reports]
+  B5 --> |Container + Build Report| C4[📦 Container]
+  B6 --> |Manifest| C5[🔎 GitOps Repo]
+
+> _Inputs above each phase show what triggers/enriches each build step. Down arrows represent outputs (reports, manifests, containers, etc)._
 
 ---
 
