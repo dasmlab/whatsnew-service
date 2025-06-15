@@ -10,8 +10,8 @@ graph TD
   B --> C((Background Commit Cache))
   B --> D[Main API Server :10020]
   B --> E[Metrics Server :9200]
-  D --> F[Swagger UI (/swagger/index.html)]
-  D --> G[Service API (/get)]
+  D --> F[Swagger UI - http://host:port/swagger/index.html)]
+  D --> G[Service API - http://host:port/get]
   E -->|Prometheus scrape| H[Grafana Alloy]
 ```
 
