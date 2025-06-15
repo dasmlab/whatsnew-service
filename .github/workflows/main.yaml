@@ -96,7 +96,6 @@ jobs:
           -e "/__PEM_CONTENTS__/ { r /dev/stdin" -e "d }" \
           k8s_envelope/whatsnew-service_deploy.yaml <<<"$PEM_CONTENTS" \
           > generated.yaml
-        EOF
 
         # Clone & update repo as usual...
         git config --global user.name "dasmlab-bot"
