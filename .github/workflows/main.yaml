@@ -44,7 +44,7 @@ jobs:
         echo "Setting up PEM Keys.."
         echo "${{ secrets.PEMFILE }}" > ./whatsnew-github.pem
         echo "Starting up App... (docker run)"
-        docker run -d -p $API_PORT:10020 -p $METRICS_PORT:9200 \
+        docker run -d  \
           --name $CONTAINER_NAME \
           --network $NETWORK_NAME \
           --env APP_ID=$APP_ID \
