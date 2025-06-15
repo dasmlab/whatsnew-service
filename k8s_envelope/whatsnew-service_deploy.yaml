@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: whatsnew-service
-          image: ghcr.io/lmcdasm/whatsnew-service:__VERSION__
+          image: ghcr.io/dasmlab/whatsnew-service:__VERSION__
           imagePullPolicy: Always
           ports:
             - name: api
