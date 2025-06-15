@@ -13,6 +13,8 @@ spec:
       labels:
         app: whatsnew-service
     spec:
+      imagePullSecrets:
+        - name: dasmlab-ghcr-pull
       containers:
         - name: whatsnew-service
           image: ghcr.io/dasmlab/whatsnew-service:__VERSION__
