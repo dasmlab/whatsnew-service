@@ -7,25 +7,38 @@
 ```mermaid
 graph TD
   A[GitHub Org Repos] -->|JWT Auth| B(WhatsNew Service)
-  B --> C{Background Commit Cache}
+  B --> C((Background Commit Cache))
   B --> D[Main API Server :10020]
   B --> E[Metrics Server :9200]
-  D --> F[Swagger UI ip:port:/swagger/index.html]
-  E -->|Prometheus scrape| G[Grafana Alloy]
+  D --> F[Swagger UI (/swagger/index.html)]
+  D --> G[Service API (/get)]
+  E -->|Prometheus scrape| H[Grafana Alloy]
 ```
 
 ---
 
-## 🚀 CX Pipeline Status
+## 🎉 CX Pipeline Status
 
-[![CI/CD Status](https://github.com/dasmlab/whatsnew-service/actions/workflows/main.yaml/badge.svg)](https://github.com/dasmlab/whatsnew-service/actions/workflows/main.yaml)
-> _Isolated Docker Networks, Secure Builds, and FluxCD GitOps Integration_
+```mermaid
+graph LR
+  Trigger([Git Push to main]) --> Build[Build Phase]
+  Build -->|Container Built| Run[Run Phase]
+  Run -->|Service Container| Test[Test Phase]
+  Run -->|Service Container| Secure[Secure Phase]
+  Build -->|Image :ghcr.io| Publish[Publish Phase]
+  Publish -->|Deployment Manifest| GitOps[GitOps Sync Phase]
+  Secure -->|Security Reports| Audit[Security Review Repo]
+  Test -->|Test Results| QA[QA Reports Repo]
+```
+
+> *Isolated Docker Networks, Secure Builds, and FluxCD GitOps Integration*
 
 ---
 
 ## 🚀 Features
 
 - 🔐 **GitHub App OAuth2 Auth**
+
   - JWT-based token exchange using a GitHub App created at the organization level
   - Access is limited to selected repositories (as per app permissions)
   - No personal access tokens (PATs) required
@@ -33,20 +46,24 @@ graph TD
   - Currently running under GitHub Free Org tier
 
 - ⚙️ **Fully Dockerized + CI/CD Ready**
+
   - Clean multi-stage Docker build
   - Integrated with GitHub Actions for automated build, test, push
   - Generates FluxCD-ready deployment manifests in `k8s_envelope/`
 
 - 📈 **Out-of-band Prometheus Metrics**
+
   - Metrics served via second Gin server on port `9200`
   - Uses `ginprom` for Prometheus-compatible scrape format
   - Clean separation of business logic (API) and telemetry (metrics)
 
 - 🔄 **Dynamic Repo Discovery**
+
   - GitHub App JWT token automatically pulls all repos accessible to the installation
   - Top 2 commits per repo fetched and cached periodically
 
 - 🧰 **Tech Stack**
+
   - Go 1.21+
   - Gin Web Framework
   - Logrus for structured logs
@@ -68,11 +85,11 @@ graph TD
 
 ### 🔧 Required Environment Variables
 
-| Variable           | Description                                       |
-|--------------------|---------------------------------------------------|
-| `APP_ID`           | GitHub App ID                                     |
-| `INSTALLATION_ID`  | App Installation ID                               |
-| `PEMFILE`          | Absolute path to downloaded GitHub App .pem file  |
+| Variable          | Description                                      |
+| ----------------- | ------------------------------------------------ |
+| `APP_ID`          | GitHub App ID                                    |
+| `INSTALLATION_ID` | App Installation ID                              |
+| `PEMFILE`         | Absolute path to downloaded GitHub App .pem file |
 
 ---
 
@@ -90,7 +107,7 @@ graph TD
 
 ---
 
-## 📦 CI/CD & GitOps Workflow
+## 📆 CI/CD & GitOps Workflow
 
 - GitHub Actions-based isolated runner pipeline
 - Builds the image, runs local healthchecks
@@ -119,7 +136,7 @@ http://localhost:10020/swagger/index.html
 
 ---
 
-## 🔮 Example Usage (cURL)
+## 🧩 Example Usage (cURL)
 
 ```bash
 curl http://localhost:10020/api/whatsnew
@@ -129,15 +146,16 @@ Returns a JSON list of the most recent commits (2 per repo) from the GitHub Org.
 
 ---
 
-## 📎 Credits
+## 📌 Credits
 
 MIT License © DASMLAB 2025
 
-Built with:  
-- [Gin](https://github.com/gin-gonic/gin)  
-- [Logrus](https://github.com/sirupsen/logrus)  
-- [Swaggo](https://github.com/swaggo/swag)  
-- [ginprom](https://github.com/Depado/ginprom)  
+Built with:
+
+- [Gin](https://github.com/gin-gonic/gin)
+- [Logrus](https://github.com/sirupsen/logrus)
+- [Swaggo](https://github.com/swaggo/swag)
+- [ginprom](https://github.com/Depado/ginprom)
 
 ---
 
