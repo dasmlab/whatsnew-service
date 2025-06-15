@@ -31,7 +31,7 @@ RUN --mount=type=cache,target=/root/.cache/go-build \
 FROM ubuntu:latest
 
 # Install CA certs for TLS (required to talk to GitHub)
-RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y ca-certificates curl wget jq && rm -rf /var/lib/apt/lists/*
 
 # Non-root for K8s security policies
 USER 65532
