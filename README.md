@@ -10,8 +10,8 @@ graph TD
   B --> C((Background Commit Cache))
   B --> D[Main API Server :10020]
   B --> E[Metrics Server :9200]
-  D --> F[Swagger UI - http://host:port/swagger/index.html]
-  D --> G[Service API - http://host:port/get]
+  D --> F[[Swagger UI - http://host:port/swagger/index.html]]
+  D --> G[[Service API - http://host:port/get]]
   E -->|Prometheus scrape| H[Grafana Alloy]
 ```
 
@@ -21,75 +21,62 @@ graph TD
 
 ```mermaid
 graph LR
-  Trigger([Git Push to main]) --> Build[Build Phase]
-  Build -->|Container Built| Run[Run Phase]
-  Run -->|Service Container| Test[Test Phase]
-  Run -->|Service Container| Secure[Secure Phase]
-  Build -->|Image :ghcr.io| Publish[Publish Phase]
-  Publish -->|Deployment Manifest| GitOps[GitOps Sync Phase]
-  Secure -->|Security Reports| Audit[Security Review Repo]
-  Test -->|Test Results| QA[QA Reports Repo]
+  Trigger([🟢 Git Push to main]) --> Build[📦 Build Phase]
+  Build -->|📤 Container Built| Run[🚀 Run Phase]
+  Run -->|🧪 Service Container| Test[🧪 Test Phase]
+  Run -->|🛡️ Service Container| Secure[🔐 Secure Phase]
+  Build -->|📦 Image :ghcr.io| Publish[📤 Publish Phase]
+  Publish -->|📝 Deployment Manifest| GitOps[🔄 GitOps Sync Phase]
+  Secure -->|📄 Security Reports| Audit[🔒 Security Review Repo]
+  Test -->|📄 Test Results| QA[✅ QA Reports Repo]
 ```
 
-> *Isolated Docker Networks, Secure Builds, and FluxCD GitOps Integration*
+> _Isolated Docker Networks, Secure Builds, and FluxCD GitOps Integration_
 
 ---
 
 ## 🚀 Features
 
 - 🔐 **GitHub App OAuth2 Auth**
-
-  - JWT-based token exchange using a GitHub App created at the organization level
-  - Access is limited to selected repositories (as per app permissions)
-  - No personal access tokens (PATs) required
-  - Org admin retains full control over scope and revocation
-  - Currently running under GitHub Free Org tier
+  - JWT-based token exchange using GitHub App (Org-level)
+  - Repo visibility is scoped by App configuration (Free Tier supported)
+  - No PATs — org admins retain fine-grained access control
 
 - ⚙️ **Fully Dockerized + CI/CD Ready**
+  - Clean multi-stage Docker builds
+  - GitHub Actions pipeline with FluxCD-compatible GitOps output
 
-  - Clean multi-stage Docker build
-  - Integrated with GitHub Actions for automated build, test, push
-  - Generates FluxCD-ready deployment manifests in `k8s_envelope/`
-
-- 📈 **Out-of-band Prometheus Metrics**
-
-  - Metrics served via second Gin server on port `9200`
-  - Uses `ginprom` for Prometheus-compatible scrape format
-  - Clean separation of business logic (API) and telemetry (metrics)
+- 📈 **Out-of-Band Prometheus Metrics**
+  - Second server on `:9200` for scrape-only Prometheus
+  - Uses `ginprom` middleware (no noise on business endpoints)
 
 - 🔄 **Dynamic Repo Discovery**
-
-  - GitHub App JWT token automatically pulls all repos accessible to the installation
-  - Top 2 commits per repo fetched and cached periodically
+  - All accessible repos via Installation Token pulled at runtime
+  - Top 2 commits cached per repo each refresh cycle
 
 - 🧰 **Tech Stack**
-
   - Go 1.21+
-  - Gin Web Framework
-  - Logrus for structured logs
-  - Swaggo for Swagger auto-gen docs
-  - Depado's `ginprom` middleware for metrics
+  - Gin, Logrus, Swaggo (Swagger), GinPrometheus
 
 ---
 
-## 📂 Local Development
+## 🧪 Local Development
 
-### 🔧 Requirements
+### 🧰 Requirements
 
-- Go 1.21 or newer
+- Go 1.21+
 - Docker
-- A GitHub App configured with:
-  - Read-only access to your organization repos
-  - A downloaded `.pem` file (for signing JWT)
-  - The `APP_ID` and `INSTALLATION_ID` for the GitHub App
+- GitHub App:
+  - With `.pem` key
+  - `APP_ID` and `INSTALLATION_ID`
 
 ### 🔧 Required Environment Variables
 
-| Variable          | Description                                      |
-| ----------------- | ------------------------------------------------ |
-| `APP_ID`          | GitHub App ID                                    |
-| `INSTALLATION_ID` | App Installation ID                              |
-| `PEMFILE`         | Absolute path to downloaded GitHub App .pem file |
+| Variable           | Description                                  |
+|--------------------|----------------------------------------------|
+| `APP_ID`           | GitHub App ID                                |
+| `INSTALLATION_ID`  | App Installation ID                          |
+| `PEMFILE`          | Path to GitHub App `.pem` key                |
 
 ---
 
@@ -107,46 +94,47 @@ graph LR
 
 ---
 
-## 📆 CI/CD & GitOps Workflow
+## 📦 CI/CD & GitOps Workflow
 
-- GitHub Actions-based isolated runner pipeline
-- Builds the image, runs local healthchecks
-- Pushes image to GHCR under `ghcr.io/lmcdasm/whatsnew-service:<version>`
-- Substitutes version into `k8s_envelope/` template and commits into FluxCD repo
+- GitHub Actions workflow: `main.yaml`
+- Steps:
+  - Build Docker image
+  - Run container healthchecks
+  - Publish to GHCR
+  - Generate manifest (version-tagged)
+  - Push to GitOps repo (Flux watches)
 
 ---
 
 ## 📊 Metrics
 
-- **Scrape endpoint:** `http://localhost:9200/metrics`
-- **Scrape target:** `Grafana Alloy` or any standard Prometheus-compatible collector
-- **Middleware:** `ginprom`
+- **Exposed at:** `http://localhost:9200/metrics`
+- **Scraped by:** Prometheus, Grafana Alloy
+- **Powered by:** [`ginprom`](https://github.com/Depado/ginprom)
 
 ---
 
-## 🔍 Swagger API Docs
-
-- Access interactive API docs at:
+## 📜 Swagger API Docs
 
 ```
 http://localhost:10020/swagger/index.html
 ```
 
-- Fully interactive with test-curl support inline
+Try endpoints like `/api/whatsnew` interactively.
 
 ---
 
-## 🧩 Example Usage (cURL)
+## 🧪 Example: API Call
 
 ```bash
 curl http://localhost:10020/api/whatsnew
 ```
 
-Returns a JSON list of the most recent commits (2 per repo) from the GitHub Org.
+Returns latest commits (2 per repo) from all visible GitHub org repos.
 
 ---
 
-## 📌 Credits
+## 🪪 Credits
 
 MIT License © DASMLAB 2025
 
@@ -155,8 +143,4 @@ Built with:
 - [Gin](https://github.com/gin-gonic/gin)
 - [Logrus](https://github.com/sirupsen/logrus)
 - [Swaggo](https://github.com/swaggo/swag)
-- [ginprom](https://github.com/Depado/ginprom)
-
----
-
-
+- [GinPrometheus](https://github.com/Depado/ginprom)
