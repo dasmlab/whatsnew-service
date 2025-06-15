@@ -15,41 +15,49 @@ graph TD
   E -->|Prometheus scrape| H[Grafana Alloy]
 ```
 
+--- 
+
+## Pipeline Status
+
+[![WhatsNew Service CX Pipeline (Isolated Builds with Docker Networks)](https://github.com/dasmlab/whatsnew-service/actions/workflows/main.yaml/badge.svg)](https://github.com/dasmlab/whatsnew-service/actions/workflows/main.yaml)
+
+
+--- 
 ---
 
-## 🎉 CX Pipeline Status
+##  ▒~_~S~J CX Pipeline Overview 
+
 
 ```mermaid
 flowchart LR
+  %% Inputs block
   subgraph Inputs
     direction TB
-    A1([Git Commit Push])
-    A2([SAST Sec Suite<br/>dasmlab/sec_suite])
-    A3([Test FW Suite<br/>dasmlab/test_suite])
+    A1([<i class="fa fa-git-alt"></i> Git Commit Push])
+    A2([<i class="fa fa-shield-alt"></i> SAST Sec Suite<br/>dasmlab/sec_suite])
+    A3([<i class="fa fa-vial"></i> Test FW Suite<br/>dasmlab/test_suite])
   end
 
-  %% Main pipeline flow
+  %% Main pipeline
   A1 --> BUILD([🔧 BUILD])
   BUILD --> RUN([▶️ RUN])
   RUN --> APP([🟦 Running App])
 
   %% Security and validation from inputs
   A2 --> SECURE([🔐 SECURE])
-  A3 --> VALIDATE([🧪 VALIDATE])
-
-  SECURE -->|Security Reports| CVE([📋 CVE/Scan/Compliance])
-  VALIDATE -->|Test Reports| TESTFW([🧪 Test FW Reports])
-
-  %% SECURE/VALIDATE run on the running app (downward links)
+  SECURE -->|Security Reports| CVE([🧾 CVE/Scan/Compliance])
   SECURE -.->|Runs Security FW Suites| APP
+
+  A3 --> VALIDATE([🧪 VALIDATE])
+  VALIDATE -->|Test Reports| TESTFW([🧪 Test FW Reports])
   VALIDATE -.->|Runs Testing FW Suites| APP
 
   %% Main flow resumes horizontally
   APP -->|Secured and Validated Container| PUBLISH([📦 PUBLISH])
   PUBLISH --> CONTAINER([🪣 Container])
   CONTAINER --> GITOPS([🔄 GitOps Sync])
-  GITOPS --> MANIFEST([📄 Manifest])
-  MANIFEST --> REPO([🔍 GitOps Monitored Repo])
+  GITOPS -- "generate manifest" --> MANIFEST([📄 Manifest])
+  MANIFEST -- "push to repo" --> REPO([🔍 GitOps Monitored Repo])
 ```
 
 > _Inputs above each phase show what triggers/enriches each build step. Down arrows represent outputs (reports, manifests, containers, etc)._
