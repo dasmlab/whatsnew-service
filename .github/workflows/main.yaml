@@ -59,7 +59,7 @@ jobs:
         docker ps -a 
 
         echo "Display startup logs"
-        docker log $CONTAINER_NAME
+        docker logs $CONTAINER_NAME
 
         echo "Quick test of endpoints"
         docker exec $CONTAINER_NAME curl -f http://localhost:$API_PORT/get || (echo "API failed health check on port ${API_PORT}" && exit 1)
