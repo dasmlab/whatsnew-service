@@ -22,27 +22,34 @@ graph TD
 ```mermaid
 flowchart LR
   subgraph Inputs
-    A1[⬇️ Git Commit Push]
-    A2[⬇️ SAST Sec Suite\nhttps://github.com/dasmlab/sec_suite]
-    A3[⬇️ Test FW Suite\ndasmlab/test_suite]
+    direction TB
+    A1([Git Commit Push])
+    A2([SAST Sec Suite<br/>dasmlab/sec_suite])
+    A3([Test FW Suite<br/>dasmlab/test_suite])
   end
-  A1 --> B1[🛠️ BUILD]
-  B1 --> B2[▶️ RUN]
-  B2 --> B3[🔒 SECURE]
-  B3 --> B4[✅ VALIDATE]
-  B4 --> B5[📤 PUBLISH]
-  B5 --> B6[🔄 GitOps Sync]
 
-  %% Inputs
-  A2 --> B3
-  A3 --> B4
+  %% Main pipeline flow
+  A1 --> BUILD([🔧 BUILD])
+  BUILD --> RUN([▶️ RUN])
+  RUN --> APP([🟦 Running App])
 
-  %% Downward outputs
-  B2 --> |Isolated Instance| C1[🏗️ Running App]
-  B3 --> |Security Reports| C2[📝 CVE/Scan/Compliance]
-  B4 --> |Test Reports| C3[🧪 Test FW Reports]
-  B5 --> |Container + Build Report| C4[📦 Container]
-  B6 --> |Manifest| C5[🔎 GitOps Repo]
+  %% Security and validation from inputs
+  A2 --> SECURE([🔐 SECURE])
+  A3 --> VALIDATE([🧪 VALIDATE])
+
+  SECURE -->|Security Reports| CVE([📋 CVE/Scan/Compliance])
+  VALIDATE -->|Test Reports| TESTFW([🧪 Test FW Reports])
+
+  %% SECURE/VALIDATE run on the running app (downward links)
+  SECURE -.->|Runs Security FW Suites| APP
+  VALIDATE -.->|Runs Testing FW Suites| APP
+
+  %% Main flow resumes horizontally
+  APP -->|Secured and Validated Container| PUBLISH([📦 PUBLISH])
+  PUBLISH --> CONTAINER([🪣 Container])
+  CONTAINER --> GITOPS([🔄 GitOps Sync])
+  GITOPS --> MANIFEST([📄 Manifest])
+  MANIFEST --> REPO([🔍 GitOps Monitored Repo])
 ```
 
 > _Inputs above each phase show what triggers/enriches each build step. Down arrows represent outputs (reports, manifests, containers, etc)._
