@@ -85,24 +85,56 @@ jobs:
 
     - name: GitOps Sync (Deploy) Phase
       run: |
+        # Substitute variables in deployment template
         sed "s|__VERSION__|${VERSION_TAG}|g" k8s_envelope/whatsnew-service_deploy.yaml > generated.yaml
 
+        # Generate ConfigMap manifest
+        cat <<EOF > whatsnew-service-vars.yaml
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: whatsnew-service-vars
+          namespace: whatsnew-service-system
+        data:
+          APP_ID: "${{ vars.APP_ID }}"
+          INSTALLATION_ID: "${{ vars.INSTALLATION_ID }}"
+        EOF
+
+        # Generate Secret manifest
+        cat <<EOF > whatsnew-service-secrets.yaml
+        apiVersion: v1
+        kind: Secret
+        metadata:
+          name: whatsnew-service-secrets
+          namespace: whatsnew-service-system
+        type: Opaque
+        stringData:
+          PEM_CONTENTS: |
+            $(echo "${{ secrets.PEM_CONTENTS }}" | sed 's/^/        /')
+        EOF
+
+        # Clone & update repo as usual...
         git config --global user.name "dasmlab-bot"
         git config --global user.email "ci@dasmlab.org"
-
         git clone https://x-access-token:${{ secrets.DASMLAB_GHCR_PAT }}@github.com/lmcdasm/dasmlab-live-cicd.git
 
         DEPLOY_DIR="dasmlab-live-cicd/clusters/dasmlab-prod-1/whatsnew-service/live"
         ARCHIVE_DIR="dasmlab-live-cicd/clusters/dasmlab-prod-1/whatsnew-service/archived"
         mkdir -p "$ARCHIVE_DIR"
 
+        # Move old manifests to archive
         find "$DEPLOY_DIR" -maxdepth 1 -type f -name 'whatsnew-service-v*.yaml' -exec mv {} "$ARCHIVE_DIR"/ \;
+
+        # Copy new manifests
         cp generated.yaml "$DEPLOY_DIR/whatsnew-service-${VERSION_TAG}.yaml"
+        cp whatsnew-service-vars.yaml "$DEPLOY_DIR/"
+        cp whatsnew-service-secrets.yaml "$DEPLOY_DIR/"
 
         cd dasmlab-live-cicd
         git add .
         git commit -m "Auto-publish whatsnew-service ${VERSION_TAG}"
         git push
+
 
     - name: Teardown (Clean Containers & Network)
       if: always()
