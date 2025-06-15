@@ -20,7 +20,6 @@ graph TD
 
 [![WhatsNew Service CX Pipeline (Isolated Builds with Docker Networks)](https://github.com/dasmlab/whatsnew-service/actions/workflows/main.yaml/badge.svg)](https://github.com/dasmlab/whatsnew-service/actions/workflows/main.yaml)
 
-
 ---
 
 ## CX Pipeline Overview 
