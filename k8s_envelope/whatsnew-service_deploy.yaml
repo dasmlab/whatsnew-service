@@ -49,6 +49,22 @@ spec:
             - name: metrics
               containerPort: 9200
               protocol: TCP
+          env:
+            - name: APP_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: whatsnew-service-vars
+                  key: APP_ID
+            - name: INSTALLATION_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: whatsnew-service-vars
+                  key: INSTALLATION_ID
+            - name: PEM_CONTENTS
+              valueFrom:
+                secretKeyRef:
+                  name: whatsnew-service-secrets
+                  key: PEM_CONTENTS
 
 ---
 
