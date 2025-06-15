@@ -24,7 +24,7 @@ graph TD
 
 ---
 
-## â~_~S~J CX Pipeline Overview 
+## CX Pipeline Overview 
 
 ```mermaid
 flowchart LR
