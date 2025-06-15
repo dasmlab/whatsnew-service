@@ -44,7 +44,7 @@ jobs:
         echo "Setting up PEM Keys.."
         echo "${{ secrets.PEMFILE }}" > ./whatsnew-github.pem
         echo "Starting up App... (docker run)"
-        docker run -d -p $API_PORT:10020 -p $METRIC_PORT:9200 \
+        docker run -d -p $API_PORT:10020 -p $METRICS_PORT:9200 \
           --name $CONTAINER_NAME \
           --network $NETWORK_NAME \
           --env APP_ID=$APP_ID \
@@ -54,6 +54,14 @@ jobs:
 
         echo "Sleeping to let things start for 5 seconds... "
         sleep 5
+
+        echo "Display the docker setups"
+        docker ps -a 
+
+        echo "Display startup logs"
+        docker log $CONTAINER_NAME
+
+        echo "Quick test of endpoints"
         docker exec $CONTAINER_NAME curl -f http://localhost:$API_PORT/get || (echo "API failed health check on port ${API_PORT}" && exit 1)
         docker exec $CONTAINER_NAME curl -f http://localhost:$METRICS_PORT/metrics || (echo "METRICS failed health check" && exit 1)
 
