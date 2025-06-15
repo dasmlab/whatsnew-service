@@ -2,23 +2,24 @@
 
 ---
 
-## 🏗️ High Level Design
+## 📊 High Level Design
 
 ```mermaid
 graph TD
   A[GitHub Org Repos] -->|JWT Auth| B(WhatsNew Service)
   B --> C{Background Commit Cache}
-  B --> D[Main API Server (:10020)]
-  B --> E[Metrics Server (:9200)]
+  B --> D[Main API Server :10020]
+  B --> E[Metrics Server :9200]
   D --> F[Swagger UI (/swagger/index.html)]
   E -->|Prometheus scrape| G[Grafana Alloy]
 ```
 
---- 
+---
 
-## Cx Pipeline Status (Continous Build, Instantiate, Secure, Validate, Publish) 
+## 🚀 CX Pipeline Status
 
-[![WhatsNew Service CX Pipeline (Isolated Builds within Discrete Networks)](https://github.com/dasmlab/whatsnew-service/actions/workflows/main.yaml/badge.svg)](https://github.com/dasmlab/whatsnew-service/actions/workflows/main.yaml)
+[![CI/CD Status](https://github.com/dasmlab/whatsnew-service/actions/workflows/main.yaml/badge.svg)](https://github.com/dasmlab/whatsnew-service/actions/workflows/main.yaml)
+> _Isolated Docker Networks, Secure Builds, and FluxCD GitOps Integration_
 
 ---
 
@@ -26,40 +27,46 @@ graph TD
 
 - 🔐 **GitHub App OAuth2 Auth**
   - JWT-based token exchange using a GitHub App created at the organization level
-  - Access is limited to selected repositories
+  - Access is limited to selected repositories (as per app permissions)
   - No personal access tokens (PATs) required
-  - Scoping and revocation are controlled by the org admin
+  - Org admin retains full control over scope and revocation
+  - Currently running under GitHub Free Org tier
 
 - ⚙️ **Fully Dockerized + CI/CD Ready**
-  - Docker multi-stage build
-  - GitHub Actions workflow with FluxCD-compatible GitOps output
+  - Clean multi-stage Docker build
+  - Integrated with GitHub Actions for automated build, test, push
+  - Generates FluxCD-ready deployment manifests in `k8s_envelope/`
 
 - 📈 **Out-of-band Prometheus Metrics**
-  - Dedicated metrics port (`:9200`) using `ginprom`
-  - Avoids mixing telemetry and business endpoints
+  - Metrics served via second Gin server on port `9200`
+  - Uses `ginprom` for Prometheus-compatible scrape format
+  - Clean separation of business logic (API) and telemetry (metrics)
 
-- 🔁 **Dynamic Repo Discovery**
-  - GitHub App token fetches live org repo list each cycle
+- 🔄 **Dynamic Repo Discovery**
+  - GitHub App JWT token automatically pulls all repos accessible to the installation
+  - Top 2 commits per repo fetched and cached periodically
 
 - 🧰 **Tech Stack**
   - Go 1.21+
-  - Gin, Logrus, Swaggo, ginprom
-  - GitHub App-based OAuth2 using private `.pem` key
+  - Gin Web Framework
+  - Logrus for structured logs
+  - Swaggo for Swagger auto-gen docs
+  - Depado's `ginprom` middleware for metrics
 
 ---
 
-## 🧪 Local Development
+## 📂 Local Development
 
 ### 🔧 Requirements
 
-- Go 1.21+
+- Go 1.21 or newer
 - Docker
-- A GitHub App with:
-  - Read-only access to selected org repos
-  - Downloaded `.pem` file
-  - Your `APP_ID` and `INSTALLATION_ID`
+- A GitHub App configured with:
+  - Read-only access to your organization repos
+  - A downloaded `.pem` file (for signing JWT)
+  - The `APP_ID` and `INSTALLATION_ID` for the GitHub App
 
-### 🔧 Required ENV Vars
+### 🔧 Required Environment Variables
 
 | Variable           | Description                                       |
 |--------------------|---------------------------------------------------|
@@ -69,7 +76,7 @@ graph TD
 
 ---
 
-### 🔨 Build Locally
+### 🛠️ Build Locally
 
 ```bash
 ./buildme.sh
@@ -85,40 +92,40 @@ graph TD
 
 ## 📦 CI/CD & GitOps Workflow
 
-- GitHub Actions based pipeline
-- Builds, tests, and publishes to GHCR
-- Generates version-tagged deployment YAML under `k8s_envelope/`
-- Auto-syncs changes to FluxCD-monitored GitOps repo
+- GitHub Actions-based isolated runner pipeline
+- Builds the image, runs local healthchecks
+- Pushes image to GHCR under `ghcr.io/lmcdasm/whatsnew-service:<version>`
+- Substitutes version into `k8s_envelope/` template and commits into FluxCD repo
 
 ---
 
 ## 📊 Metrics
 
-- **Exposed at:** `http://localhost:9200/metrics`
-- **Scrapable by:** Prometheus, Grafana Alloy, etc.
-- **Exported via:** [ginprom](https://github.com/Depado/ginprom)
+- **Scrape endpoint:** `http://localhost:9200/metrics`
+- **Scrape target:** `Grafana Alloy` or any standard Prometheus-compatible collector
+- **Middleware:** `ginprom`
 
 ---
 
-## 🔍 API and Swagger
+## 🔍 Swagger API Docs
 
-Swagger docs are served at:
+- Access interactive API docs at:
 
 ```
 http://localhost:10020/swagger/index.html
 ```
 
-Try your calls directly from the Swagger UI.
+- Fully interactive with test-curl support inline
 
 ---
 
-## 🧪 Example: cURL Call
+## 🔮 Example Usage (cURL)
 
 ```bash
 curl http://localhost:10020/api/whatsnew
 ```
 
-Returns the latest commits (2 per repo) from your GitHub org.
+Returns a JSON list of the most recent commits (2 per repo) from the GitHub Org.
 
 ---
 
@@ -126,11 +133,12 @@ Returns the latest commits (2 per repo) from your GitHub org.
 
 MIT License © DASMLAB 2025
 
-Built with:
-- [Gin](https://github.com/gin-gonic/gin)
-- [Logrus](https://github.com/sirupsen/logrus)
-- [Swaggo](https://github.com/swaggo/swag)
-- [ginprom](https://github.com/Depado/ginprom)
+Built with:  
+- [Gin](https://github.com/gin-gonic/gin)  
+- [Logrus](https://github.com/sirupsen/logrus)  
+- [Swaggo](https://github.com/swaggo/swag)  
+- [ginprom](https://github.com/Depado/ginprom)  
 
 ---
+
 
