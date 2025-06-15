@@ -79,9 +79,9 @@ jobs:
 
     - name: Publish Phase
       run: |
-        docker tag $IMAGE_TAG ghcr.io/lmcdasm/whatsnew-service:${VERSION_TAG}
-        echo "${{ secrets.DASMLAB_GHCR_PAT }}" | docker login ghcr.io -u lmcdasm --password-stdin
-        docker push ghcr.io/lmcdasm/whatsnew-service:${VERSION_TAG}
+        docker tag $IMAGE_TAG ghcr.io/dasmlab/whatsnew-service:${VERSION_TAG}
+        echo "${{ secrets.DASMLAB_GHCR_PAT }}" | docker login ghcr.io -u dasmlab --password-stdin
+        docker push ghcr.io/dasmlab/whatsnew-service:${VERSION_TAG}
 
     - name: GitOps Sync (Deploy) Phase
       run: |
