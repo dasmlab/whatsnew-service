@@ -43,6 +43,7 @@ flowchart LR
   B4 --> |Test Reports| C3[🧪 Test FW Reports]
   B5 --> |Container + Build Report| C4[📦 Container]
   B6 --> |Manifest| C5[🔎 GitOps Repo]
+```
 
 > _Inputs above each phase show what triggers/enriches each build step. Down arrows represent outputs (reports, manifests, containers, etc)._
 
