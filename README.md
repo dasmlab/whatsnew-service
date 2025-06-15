@@ -10,7 +10,7 @@ graph TD
   B --> C{Background Commit Cache}
   B --> D[Main API Server :10020]
   B --> E[Metrics Server :9200]
-  D --> F[Swagger UI (/swagger/index.html)]
+  D --> F[Swagger UI ip:port:/swagger/index.html]
   E -->|Prometheus scrape| G[Grafana Alloy]
 ```
 
