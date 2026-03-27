@@ -67,9 +67,9 @@ flowchart LR
   - Repo visibility is scoped by App configuration (Free Tier supported)
   - No PATs — org admins retain fine-grained access control
 
-- ⚙️ **Fully Dockerized + CI/CD Ready**
-  - Clean multi-stage Docker builds
-  - GitHub Actions pipeline with FluxCD-compatible GitOps output
+- ⚙️ **Buildah/Podman + CI/CD Ready**
+  - Clean multi-stage container build
+  - Self-hosted GitHub Actions pipeline using Buildah/Podman with FluxCD-compatible GitOps output
 
 - 📈 **Out-of-Band Prometheus Metrics**
   - Second server on `:9200` for scrape-only Prometheus
@@ -123,10 +123,10 @@ flowchart LR
 
 - GitHub Actions workflow: `main.yaml`
 - Steps:
-  - Build Docker image
-  - Run container healthchecks
+  - Build image with Buildah
+  - Run container health checks with Podman
   - Publish to GHCR
-  - Generate manifest (version-tagged)
+  - Generate manifest (version-tagged, OCP/k3s mode)
   - Push to GitOps repo (Flux watches)
 
 ---

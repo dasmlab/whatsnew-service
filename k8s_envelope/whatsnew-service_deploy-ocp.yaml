@@ -1,0 +1,111 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: whatsnew-service-vars
+  namespace: whatsnew-service-system
+data:
+  APP_ID: "__APP_ID__"
+  INSTALLATION_ID: "__INSTALLATION_ID__"
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: whatsnew-service-secrets
+  namespace: whatsnew-service-system
+type: Opaque
+stringData:
+  PEM_CONTENTS: |-
+ __PEM_CONTENTS__
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: whatsnew-service
+  namespace: whatsnew-service-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: whatsnew-service
+  template:
+    metadata:
+      labels:
+        app: whatsnew-service
+    spec:
+      imagePullSecrets:
+        - name: dasmlab-ghcr-pull
+      containers:
+        - name: whatsnew-service
+          image: ghcr.io/dasmlab/whatsnew-service:__VERSION__
+          imagePullPolicy: Always
+          ports:
+            - name: api
+              containerPort: 10020
+              protocol: TCP
+            - name: metrics
+              containerPort: 9200
+              protocol: TCP
+          env:
+            - name: APP_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: whatsnew-service-vars
+                  key: APP_ID
+            - name: INSTALLATION_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: whatsnew-service-vars
+                  key: INSTALLATION_ID
+            - name: PEM_CONTENTS
+              valueFrom:
+                secretKeyRef:
+                  name: whatsnew-service-secrets
+                  key: PEM_CONTENTS
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: whatsnew-service
+  namespace: whatsnew-service-system
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9200"
+    prometheus.io/path: "/metrics"
+spec:
+  selector:
+    app: whatsnew-service
+  type: ClusterIP
+  ports:
+    - name: api
+      port: 10020
+      targetPort: api
+      protocol: TCP
+    - name: metrics
+      port: 9200
+      targetPort: metrics
+      protocol: TCP
+
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: whatsnew-service
+  namespace: whatsnew-service-system
+spec:
+  host: whatsnew.svc.dasmlab.org
+  to:
+    kind: Service
+    name: whatsnew-service
+    weight: 100
+  port:
+    targetPort: api
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None
