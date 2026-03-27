@@ -2,8 +2,17 @@ name: WhatsNew Service CX Pipeline (Isolated Builds with Docker Networks)
 
 on:
   push:
-    branches: [ "main" ]
-
+    branches: ["main", "development"]
+  workflow_dispatch:
+    inputs:
+      cluster_type:
+        description: 'Cluster type (ocp or k3s)'
+        required: false
+        default: 'ocp'
+        type: choice
+        options:
+          - ocp
+          - k3s
 jobs:
   cx-pipeline:
     runs-on: self-hosted
