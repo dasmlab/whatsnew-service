@@ -33,8 +33,8 @@ jobs:
       - name: Verify Buildah and Podman
         run: |
           export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${PATH}"
-          sudo buildah --version
-          sudo podman --version
+          buildah --version
+          podman --version
 
       - name: Build Phase
         env:
@@ -46,8 +46,8 @@ jobs:
             exit 1
           fi
 
-          echo "${GHCR_TOKEN}" | sudo buildah login --username dasmlab --password-stdin ghcr.io
-          sudo buildah bud \
+          echo "${GHCR_TOKEN}" | buildah login --username dasmlab --password-stdin ghcr.io
+          buildah bud \
             --build-arg ARCH=amd64 \
             --build-arg goproxy=https://proxy.golang.org \
             -t "${IMAGE_URI}" \
@@ -60,8 +60,8 @@ jobs:
           INSTALLATION_ID: ${{ vars.INSTALLATION_ID }}
           PEM_CONTENTS: ${{ secrets.PEM_CONTENTS }}
         run: |
-          sudo podman rm -f "${CONTAINER_NAME}" 2>/dev/null || true
-          sudo podman run -d \
+          podman rm -f "${CONTAINER_NAME}" 2>/dev/null || true
+          podman run -d \
             --name "${CONTAINER_NAME}" \
             -p "${API_PORT}:${API_PORT}" \
             -p "${METRICS_PORT}:${METRICS_PORT}" \
@@ -71,7 +71,7 @@ jobs:
             "${IMAGE_URI}"
 
           sleep 5
-          sudo podman logs "${CONTAINER_NAME}"
+          podman logs "${CONTAINER_NAME}"
           curl -f "http://localhost:${API_PORT}/get" || (echo "API health check failed" && exit 1)
           curl -f "http://localhost:${METRICS_PORT}/metrics" || (echo "Metrics health check failed" && exit 1)
 
@@ -87,7 +87,7 @@ jobs:
 
       - name: Publish Phase
         run: |
-          sudo buildah push "${IMAGE_URI}"
+          buildah push "${IMAGE_URI}"
           echo "Pushed ${IMAGE_URI}"
 
       - name: GitOps Sync (Deploy) Phase
@@ -132,7 +132,7 @@ jobs:
       - name: Teardown
         if: always()
         run: |
-          sudo podman rm -f "${CONTAINER_NAME}" 2>/dev/null || true
-          sudo buildah rm -a 2>/dev/null || true
+          podman rm -f "${CONTAINER_NAME}" 2>/dev/null || true
+          buildah rm -a 2>/dev/null || true
           rm -rf ~/.docker ~/.local/share/containers 2>/dev/null || true
 
